@@ -12,14 +12,21 @@ const {
   isUniqueEmail,
   isUserId,
 } = require("../helpers/db-validations");
-const { fieldsValidator } = require("../middlewares/fields-validator");
+const {
+  fieldsValidator,
+  jwtValidator,
+  hasRole,
+  isAdmin,
+} = require("../middlewares");
 
 const router = Router();
 
-router.get("/", usersGet);
+router.get("/", [jwtValidator, hasRole("ADMIN_ROLE", "USER_ROLE")], usersGet);
 router.post(
   "/",
   [
+    jwtValidator,
+    isAdmin,
     check("name", "name required").not().isEmpty(),
     check("password", "password min lenght is 6 chars").isLength({ min: 6 }),
     check("email", "invalid email").isEmail().custom(isUniqueEmail),
@@ -31,16 +38,30 @@ router.post(
 router.put(
   "/:id",
   [
+    jwtValidator,
+    hasRole("ADMIN_ROLE", "USER_ROLE"),
     check("id", "invalid id").isMongoId().bail().custom(isUserId),
     check("role").custom(isValidRole),
     fieldsValidator,
   ],
   usersPut
 );
-router.patch("/:id", usersPatch);
+router.patch(
+  "/:id",
+  [
+    jwtValidator,
+    hasRole("ADMIN_ROLE", "USER_ROLE"),
+    check("id", "invalid id").isMongoId().bail().custom(isUserId),
+    check("role").custom(isValidRole),
+    fieldsValidator,
+  ],
+  usersPatch
+);
 router.delete(
   "/:id",
   [
+    jwtValidator,
+    isAdmin,
     check("id", "invalid id").isMongoId().bail().custom(isUserId),
     fieldsValidator,
   ],

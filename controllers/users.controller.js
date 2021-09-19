@@ -1,7 +1,6 @@
 const { request, response } = require("express");
 const bcryptjs = require("bcryptjs");
 const User = require("../models/users");
-const { validationResult } = require("express-validator");
 
 const usersGet = async (req = request, res = response) => {
   const { skip = 0, limit = 0 } = req.query;
